@@ -1,0 +1,7 @@
+# Nim build artifacts
+/tests/test_all
+*.o
+*.a
+*.so
+*.dylib
+*.dll
