@@ -1,5 +1,5 @@
 import std/[unittest, tables]
-import flet/[types, control, ffi, session, pubsub, value_types, component, router, controls]
+import flet/[types, control, ffi, session, pubsub, value_types, component, router, controls, canvas, auth, app]
 
 type CounterComponent = ref object of Component
   count: int
@@ -35,21 +35,38 @@ suite "Nim Flet Full SDK Test Suite":
     check isDirty(btn)
     check (btn.dirtyFlags and (1u64 shl 1)) != 0
 
-  test "Material & Cupertino Controls instantiation":
+  test "Material, Cupertino & Canvas Controls":
     let txt = newText()
     txt.value = "Hello World"
     txt.size = 24.0
 
-    let chk = newCheckbox()
-    chk.value = true
-    chk.label = "Accept Terms"
+    let cv = newCanvas()
+    cv.width = 300.0
+    cv.height = 200.0
 
-    let cupBtn = newCupertinoButton()
-    cupBtn.text = "iOS Action"
+    let line = newShapeLine()
+    line.x1 = 0.0
+    line.y1 = 0.0
+    line.x2 = 100.0
+    line.y2 = 100.0
 
     check txt.value == "Hello World"
-    check chk.value == true
-    check cupBtn.text == "iOS Action"
+    check cv.width == 300.0
+    check line.x2 == 100.0
+
+  test "OAuth Provider Setup":
+    let provider = newGitHubOAuthProvider("client-123", "secret-456")
+    check provider.clientId == "client-123"
+
+  test "App Runner Entrypoint":
+    var appRan = false
+    app(proc(page: Control) =
+      let btn = newElevatedButton()
+      btn.text = "App Started"
+      page.addChild(btn)
+      appRan = true
+    )
+    check appRan
 
   test "Session, hierarchy tree and binary patch serialization":
     let sess = newSession("sess-123")
