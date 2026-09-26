@@ -55,8 +55,9 @@ proc serializePatchNode*(c: Control, buf: var MemoryBuffer) =
   c.clearDirty()
 
 proc generatePatchBuffer*(root: Control): MemoryBuffer =
-  ## Generates binary patch frame for the entire UI hierarchy rooted at `root`.
+  ## Generates framed binary patch payload for Flet backend pipeline (0x00 frame discriminator).
   result = newMemoryBuffer(2048)
-  # Frame header: Action type (PatchControl = 2)
+  # Flet protocol frame header discriminator
+  result.appendByte(byte(0x00))
   result.appendByte(byte(MessageAction.PatchControl))
   serializePatchNode(root, result)

@@ -4,7 +4,7 @@ import std/macros
 import flet/[types, control, protocol]
 
 macro declareControl*(typeName: untyped, baseType: untyped, body: untyped): untyped =
-  ## Generates type definitions, initialization proc, property assignment setters (`=`), and custom property patch serialization with bitmask tracking.
+  ## Generates type definitions, initialization proc, property assignment setters (`=`), and tagged custom property patch serialization with bitmask tracking.
   let nameStr = $typeName
   let typeNode = newIdentNode(nameStr)
   let baseNode = newIdentNode($baseType)
@@ -45,16 +45,20 @@ macro declareControl*(typeName: untyped, baseType: untyped, body: untyped): unty
       setterProcs.add(setterCode)
 
       let fieldTypeRepr = repr(fieldType)
+      let fieldTag = byte(bitIdx)
+
       if fieldTypeRepr == "string":
         customSerializers.add(
           quote do:
             if (c.dirtyFlags and (1u64 shl `bitIdx`)) != 0:
+              buf.appendByte(`fieldTag`)
               buf.writeStringWithLen(c.`privateFieldName`)
         )
       elif fieldTypeRepr == "int":
         customSerializers.add(
           quote do:
             if (c.dirtyFlags and (1u64 shl `bitIdx`)) != 0:
+              buf.appendByte(`fieldTag`)
               let v = int32(c.`privateFieldName`)
               buf.appendByte(byte(v and 0xFF))
               buf.appendByte(byte((v shr 8) and 0xFF))
@@ -65,12 +69,14 @@ macro declareControl*(typeName: untyped, baseType: untyped, body: untyped): unty
         customSerializers.add(
           quote do:
             if (c.dirtyFlags and (1u64 shl `bitIdx`)) != 0:
+              buf.appendByte(`fieldTag`)
               buf.appendByte(if c.`privateFieldName`: byte(1) else: byte(0))
         )
       elif fieldTypeRepr == "float64" or fieldTypeRepr == "float":
         customSerializers.add(
           quote do:
             if (c.dirtyFlags and (1u64 shl `bitIdx`)) != 0:
+              buf.appendByte(`fieldTag`)
               buf.writeF64(c.`privateFieldName`)
         )
 

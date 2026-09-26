@@ -24,7 +24,6 @@ proc registerControl*(s: Session, c: Control) =
     s.registerControl(child)
 
 proc updateUI*(s: Session) =
-  ## Scans dirty controls, packs binary patch, and emits to Dart FFI.
+  ## Scans dirty controls, packs binary patch, and emits to Dart FFI safely without premature deallocation.
   var patchBuf = generatePatchBuffer(s.rootControl)
   emitPatchToDart(patchBuf)
-  free(patchBuf)

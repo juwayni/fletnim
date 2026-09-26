@@ -1,5 +1,5 @@
 import std/[unittest, tables]
-import flet/[types, control, ffi, session, pubsub, value_types, component, router, controls, canvas, auth, app]
+import flet/[types, control, ffi, session, pubsub, value_types, component, router, controls, canvas, auth, app, utils, testing]
 
 type CounterComponent = ref object of Component
   count: int
@@ -54,6 +54,23 @@ suite "Nim Flet Full SDK Test Suite":
     check cv.width == 300.0
     check line.x2 == 100.0
 
+  test "Utilities Slugify, Hashing, Vector Math":
+    check slugify("Hello World 123!") == "hello-world-123"
+    check fnv1a32("test") > 0u32
+    let v1 = vec2(0.0, 0.0)
+    let v2 = vec2(3.0, 4.0)
+    check distance(v1, v2) == 5.0
+
+  test "Testing Finder Utilities":
+    let root = newColumn()
+    let btn = newElevatedButton()
+    btn.text = "Find Me"
+    root.addChild(btn)
+
+    let found = findControlByType(root, "ElevatedButton")
+    check found.len == 1
+    check found[0].id == btn.id
+
   test "OAuth Provider Setup":
     let provider = newGitHubOAuthProvider("client-123", "secret-456")
     check provider.clientId == "client-123"
@@ -89,7 +106,8 @@ suite "Nim Flet Full SDK Test Suite":
     sess.updateUI()
 
     check receivedBytes.len > 0
-    check receivedBytes[0] == byte(MessageAction.PatchControl)
+    check receivedBytes[0] == byte(0x00) # Flet packet frame discriminator
+    check receivedBytes[1] == byte(MessageAction.PatchControl)
 
   test "Dart FFI Event Dispatching Queue":
     flet_dispatch_event(100u64, "click", nil, 0)
@@ -119,6 +137,9 @@ suite "Nim Flet Full SDK Test Suite":
     let c = rgb(255, 0, 0)
     check c.r == 255
     check c.a == 255
+
+    let hexC = hexColor("#FF0000")
+    check hexC.r == 255
 
     let p = paddingAll(16.0)
     check p.top == 16.0
