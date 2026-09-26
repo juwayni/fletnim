@@ -44,6 +44,21 @@ proc newControl*(controlType: string): Control =
 proc on*(c: Control, eventName: string, handler: EventHandler) =
   c.events[eventName] = handler
 
+proc `onClick=`*(c: Control, handler: EventHandler) =
+  c.events["click"] = handler
+
+proc `onChange=`*(c: Control, handler: EventHandler) =
+  c.events["change"] = handler
+
+proc `onFocus=`*(c: Control, handler: EventHandler) =
+  c.events["focus"] = handler
+
+proc `onBlur=`*(c: Control, handler: EventHandler) =
+  c.events["blur"] = handler
+
+proc `onHover=`*(c: Control, handler: EventHandler) =
+  c.events["hover"] = handler
+
 proc markDirty*(c: Control, flagIndex: int) {.inline.} =
   c.dirtyFlags = c.dirtyFlags or (1u64 shl flagIndex)
 
