@@ -1,5 +1,5 @@
 import std/[unittest, tables]
-import flet/[types, control, ffi, session, pubsub, value_types, component, router, controls, cupertino, material, canvas, auth, app, utils, testing, theme, transform, animation, security, version, page, geometry, colors]
+import flet/[types, control, ffi, session, pubsub, value_types, component, router, controls, cupertino, material, services, canvas, auth, app, utils, testing, theme, transform, animation, security, version, page, geometry, colors]
 
 type CounterComponent = ref object of Component
   count: int
@@ -14,6 +14,22 @@ suite "Nim Flet Full SDK Test Suite":
   test "Version Constants":
     check FletVersion == "0.26.0"
     check IsNativeNim == true
+
+  test "Services Suite":
+    let fp = newFilePicker()
+    fp.dialogTitle = "Select File"
+    fp.allowMultiple = true
+
+    let bat = newBattery()
+    bat.level = 85
+    bat.charging = true
+
+    let ul = newUrlLauncher()
+    ul.url = "https://flet.dev"
+
+    check fp.dialogTitle == "Select File"
+    check bat.level == 85
+    check ul.url == "https://flet.dev"
 
   test "Material Controls Suite":
     let dialog = newMaterialAlertDialog()

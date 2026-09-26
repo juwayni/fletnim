@@ -341,42 +341,7 @@ declareControl(AppBar, Control):
   bgColor: string
   elevation: float64
 
-# ── Services & Hardware Sensors ──────────────────────────────────────────────
-declareControl(FilePicker, Control):
-  dialogTitle: string
-
-declareControl(Clipboard, Control):
-  value: string
-
-declareControl(SharedPreferences, Control):
-  key: string
-  value: string
-
 declareControl(Audio, Control):
   src: string
   autoplay: bool
   volume: float64
-
-declareControl(Accelerometer, Control):
-  interval: int
-
-declareControl(Gyroscope, Control):
-  interval: int
-
-declareControl(Magnetometer, Control):
-  interval: int
-
-declareControl(HapticFeedback, Control):
-  feedbackType: string
-
-declareControl(Battery, Control):
-  level: int
-
-declareControl(StoragePaths, Control):
-  path: string
-
-declareControl(UrlLauncher, Control):
-  url: string
-
-declareControl(Wakelock, Control):
-  enabled: bool
