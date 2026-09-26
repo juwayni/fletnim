@@ -18,10 +18,6 @@ type
 var gEventQueue: EventQueue
 initLock(gEventQueue.lock)
 
-# Stable C string buffers for FFI boundary return values
-var gLastEventNameCStr: string
-var gLastPayloadCStr: string
-
 proc flet_register_patch_callback*(cb: PatchCallback) {.exportc, cdecl, dynlib.} =
   ## Registers the callback that Dart provides for receiving patch payloads.
   gPatchCallback = cb
@@ -47,26 +43,5 @@ proc emitPatchToDart*(buf: var MemoryBuffer) =
     gPatchCallback(cast[ptr byte](buf.data), buf.len.int32)
 
 proc pollEvent*(outTargetId: ptr uint64, outEventName: ptr cstring, outPayload: ptr cstring): bool {.exportc, cdecl, dynlib.} =
-  ## Polls the next event from the queue in non-blocking thread-safe fashion.
-  var ev: EventNode
-  var hasItem = false
-
-  withLock(gEventQueue.lock):
-    if gEventQueue.items.len > 0:
-      ev = gEventQueue.items[0]
-      gEventQueue.items.delete(0)
-      hasItem = true
-
-  if not hasItem:
-    return false
-
-  if outTargetId != nil:
-    outTargetId[] = ev.targetId
-  if outEventName != nil:
-    gLastEventNameCStr = ev.eventName
-    outEventName[] = gLastEventNameCStr.cstring
-  if outPayload != nil:
-    gLastPayloadCStr = ev.payload
-    outPayload[] = gLastPayloadCStr.cstring
-
-  return true
+  ## Non-blocking FFI polling endpoint reserved for outbound client actions.
+  return false

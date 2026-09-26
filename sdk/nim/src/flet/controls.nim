@@ -228,36 +228,6 @@ declareControl(AppBar, Control):
   centerTitle: bool
   bgColor: string
 
-# ── Cupertino Controls ───────────────────────────────────────────────────────
-declareControl(CupertinoButton, Control):
-  text: string
-  color: string
-
-declareControl(CupertinoTextField, Control):
-  value: string
-  placeholder: string
-
-declareControl(CupertinoSwitch, Control):
-  value: bool
-
-declareControl(CupertinoSlider, Control):
-  value: float64
-  min: float64
-  max: float64
-
-declareControl(CupertinoDatePicker, Control):
-  value: string
-
-declareControl(CupertinoTimerPicker, Control):
-  value: int
-
-declareControl(CupertinoActionSheet, Control):
-  title: string
-  open: bool
-
-declareControl(CupertinoContextMenu, Control):
-  enable: bool
-
 # ── Services & Hardware Sensors ──────────────────────────────────────────────
 declareControl(FilePicker, Control):
   dialogTitle: string
