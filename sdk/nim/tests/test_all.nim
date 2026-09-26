@@ -1,19 +1,15 @@
 import std/[unittest, tables]
-import flet/[types, control, macros, ffi, session, pubsub, value_types, component, router]
-
-declareControl(Button, Control):
-  text: string
-  icon: string
+import flet/[types, control, ffi, session, pubsub, value_types, component, router, controls]
 
 type CounterComponent = ref object of Component
   count: int
 
 method build(comp: CounterComponent): Control =
-  let btn = newButton()
-  btn.text("Count: " & $comp.count)
+  let btn = newElevatedButton()
+  btn.text = "Count: " & $comp.count
   return btn
 
-suite "Nim Flet Core SDK & Extensions Tests":
+suite "Nim Flet Full SDK Test Suite":
 
   test "MemoryBuffer allocation and operations":
     var buf = newMemoryBuffer(16)
@@ -27,25 +23,44 @@ suite "Nim Flet Core SDK & Extensions Tests":
     check buf.data == nil
 
   test "Macro generation and bitmask mutation tracking":
-    let btn = newButton()
-    check btn.controlType == "Button"
+    let btn = newElevatedButton()
+    check btn.controlType == "ElevatedButton"
     check btn.id > 0
     check isDirty(btn)
 
     clearDirty(btn)
     check not isDirty(btn)
 
-    btn.text("Click Me")
+    btn.text = "Click Me"
     check isDirty(btn)
     check (btn.dirtyFlags and (1u64 shl 1)) != 0
 
+  test "Material & Cupertino Controls instantiation":
+    let txt = newText()
+    txt.value = "Hello World"
+    txt.size = 24.0
+
+    let chk = newCheckbox()
+    chk.value = true
+    chk.label = "Accept Terms"
+
+    let cupBtn = newCupertinoButton()
+    cupBtn.text = "iOS Action"
+
+    check txt.value == "Hello World"
+    check chk.value == true
+    check cupBtn.text == "iOS Action"
+
   test "Session, hierarchy tree and binary patch serialization":
     let sess = newSession("sess-123")
-    let btn = newButton()
-    btn.text("Submit")
+    let btn = newElevatedButton()
+    btn.text = "Submit"
 
-    sess.rootControl.addChild(btn)
-    sess.registerControl(btn)
+    let col = newColumn()
+    col.addChild(btn)
+
+    sess.rootControl.addChild(col)
+    sess.registerControl(col)
 
     var receivedBytes: seq[byte] = @[]
     proc onPatch(bufPtr: ptr byte, len: int32) {.cdecl.} =
@@ -107,10 +122,10 @@ suite "Nim Flet Core SDK & Extensions Tests":
   test "Router Route Matching":
     let r = newRouter()
     r.addRoute("/", proc(params: Table[string, string]): Control =
-      let btn = newButton()
-      btn.text("Home")
+      let btn = newElevatedButton()
+      btn.text = "Home"
       return btn
     )
 
     let pageCtrl = r.matchRoute("/")
-    check pageCtrl.controlType == "Button"
+    check pageCtrl.controlType == "ElevatedButton"

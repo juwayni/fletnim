@@ -1,12 +1,12 @@
 ## Base Control Type and Mutation Tracking Engine
 
+import std/atomics
 import flet/types
 
-var gLastId {.threadvar.}: ControlId
+var gLastId: Atomic[uint64]
 
 proc nextControlId*(): ControlId =
-  inc gLastId
-  return gLastId
+  return gLastId.fetchAdd(1u64) + 1u64
 
 type
   EventHandler* = proc (e: string) {.closure.}

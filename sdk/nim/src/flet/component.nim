@@ -16,7 +16,7 @@ proc mount*(comp: Component) =
     comp.addChild(body)
     comp.isMounted = true
 
-proc setState*(comp: Component, updateAction: proc()) =
+proc setState*(comp: Component, updateAction: proc() {.closure.}) =
   ## Mutates state and triggers dirty flag recalculation for re-rendering.
   updateAction()
   if comp.isMounted:
