@@ -15,6 +15,17 @@ suite "Nim Flet Full SDK Test Suite":
     check FletVersion == "0.26.0"
     check IsNativeNim == true
 
+  test "OAuth Providers Suite":
+    let gh = newGitHubOAuthProvider("gh-123", "secret-gh")
+    let gg = newGoogleOAuthProvider("gg-123", "secret-gg")
+    let az = newAzureOAuthProvider("az-123", "secret-az", "tenant-1")
+    let a0 = newAuth0OAuthProvider("mytenant.auth0.com", "a0-123", "secret-a0")
+
+    check gh.id == "github"
+    check gg.id == "google"
+    check az.id == "azure"
+    check a0.domain == "mytenant.auth0.com"
+
   test "Core UI Controls Suite":
     let markdown = newMarkdown()
     markdown.value = "# Hello Nim Flet"
@@ -173,10 +184,6 @@ suite "Nim Flet Full SDK Test Suite":
     let found = findControlByType(root, "ElevatedButton")
     check found.len == 1
     check found[0].id == btn.id
-
-  test "OAuth Provider Setup":
-    let provider = newGitHubOAuthProvider("client-123", "secret-456")
-    check provider.clientId == "client-123"
 
   test "App Runner Entrypoint":
     var appRan = false

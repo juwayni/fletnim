@@ -21,6 +21,10 @@ type
 var gEventQueue*: EventQueue
 initLock(gEventQueue.lock)
 
+# C-string memory buffers retained for FFI boundary stability
+var gLastEventNameCStr: string
+var gLastPayloadCStr: string
+
 proc flet_register_event_dispatcher*(dispatcher: EventDispatcherProc) =
   gEventDispatcher = dispatcher
 
@@ -65,5 +69,11 @@ proc pollEvent*(outTargetId: ptr uint64, outEventName: ptr cstring, outPayload: 
 
   if outTargetId != nil:
     outTargetId[] = ev.targetId
+  if outEventName != nil:
+    gLastEventNameCStr = ev.eventName
+    outEventName[] = gLastEventNameCStr.cstring
+  if outPayload != nil:
+    gLastPayloadCStr = ev.payload
+    outPayload[] = gLastPayloadCStr.cstring
 
   return true
