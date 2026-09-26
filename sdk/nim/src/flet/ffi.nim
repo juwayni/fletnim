@@ -1,5 +1,6 @@
 ## FFI and Memory Event Loop Bridge for Dart/Flutter Integration
 
+import locks
 import flet/types
 
 var gPatchCallback: PatchCallback = nil
@@ -11,9 +12,15 @@ type
     payload: string
 
   EventQueue = object
+    lock: Lock
     items: seq[EventNode]
 
 var gEventQueue: EventQueue
+initLock(gEventQueue.lock)
+
+# Stable C string buffers for FFI boundary return values
+var gLastEventNameCStr: string
+var gLastPayloadCStr: string
 
 proc flet_register_patch_callback*(cb: PatchCallback) {.exportc, cdecl, dynlib.} =
   ## Registers the callback that Dart provides for receiving patch payloads.
@@ -31,7 +38,8 @@ proc flet_dispatch_event*(targetId: uint64, eventName: cstring, payloadPtr: ptr 
     eventName: if eventName != nil: $eventName else: "",
     payload: payload
   )
-  gEventQueue.items.add(node)
+  withLock(gEventQueue.lock):
+    gEventQueue.items.add(node)
 
 proc emitPatchToDart*(buf: var MemoryBuffer) =
   ## Sends a memory buffer containing UI patches to Dart over the registered callback.
@@ -39,18 +47,26 @@ proc emitPatchToDart*(buf: var MemoryBuffer) =
     gPatchCallback(cast[ptr byte](buf.data), buf.len.int32)
 
 proc pollEvent*(outTargetId: ptr uint64, outEventName: ptr cstring, outPayload: ptr cstring): bool {.exportc, cdecl, dynlib.} =
-  ## Polls the next event from the queue in non-blocking fashion.
-  if gEventQueue.items.len == 0:
-    return false
+  ## Polls the next event from the queue in non-blocking thread-safe fashion.
+  var ev: EventNode
+  var hasItem = false
 
-  let ev = gEventQueue.items[0]
+  withLock(gEventQueue.lock):
+    if gEventQueue.items.len > 0:
+      ev = gEventQueue.items[0]
+      gEventQueue.items.delete(0)
+      hasItem = true
+
+  if not hasItem:
+    return false
 
   if outTargetId != nil:
     outTargetId[] = ev.targetId
   if outEventName != nil:
-    outEventName[] = ev.eventName.cstring
+    gLastEventNameCStr = ev.eventName
+    outEventName[] = gLastEventNameCStr.cstring
   if outPayload != nil:
-    outPayload[] = ev.payload.cstring
+    gLastPayloadCStr = ev.payload
+    outPayload[] = gLastPayloadCStr.cstring
 
-  gEventQueue.items.delete(0)
   return true

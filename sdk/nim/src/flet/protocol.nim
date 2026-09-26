@@ -6,7 +6,7 @@ proc writeU64*(buf: var MemoryBuffer, val: uint64) =
   var v = val
   for i in 0..<8:
     buf.appendByte(byte(v and 0xFFu64))
-    v = v shl 8
+    v = v shr 8
 
 proc writeF64*(buf: var MemoryBuffer, val: float64) =
   var bits = cast[uint64](val)

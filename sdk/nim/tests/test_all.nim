@@ -1,15 +1,19 @@
-import std/unittest
-import flet/[types, control, macros, ffi, session]
+import std/[unittest, tables]
+import flet/[types, control, macros, ffi, session, pubsub, value_types, component, router]
 
 declareControl(Button, Control):
   text: string
   icon: string
 
-declareControl(TextField, Control):
-  value: string
-  label: string
+type CounterComponent = ref object of Component
+  count: int
 
-suite "Nim Flet Core SDK Tests":
+method build(comp: CounterComponent): Control =
+  let btn = newButton()
+  btn.text("Count: " & $comp.count)
+  return btn
+
+suite "Nim Flet Core SDK & Extensions Tests":
 
   test "MemoryBuffer allocation and operations":
     var buf = newMemoryBuffer(16)
@@ -40,13 +44,8 @@ suite "Nim Flet Core SDK Tests":
     let btn = newButton()
     btn.text("Submit")
 
-    let tf = newTextField()
-    tf.value("User Input")
-
     sess.rootControl.addChild(btn)
-    sess.rootControl.addChild(tf)
     sess.registerControl(btn)
-    sess.registerControl(tf)
 
     var receivedBytes: seq[byte] = @[]
     proc onPatch(bufPtr: ptr byte, len: int32) {.cdecl.} =
@@ -70,3 +69,48 @@ suite "Nim Flet Core SDK Tests":
     let polled = pollEvent(addr targetId, addr evName, addr payload)
     check polled
     check targetId == 100u64
+
+  test "PubSub Messaging Bus":
+    let hub = newPubSubHub()
+    var msgReceived = ""
+
+    let cb: PubSubCallback = proc(args: seq[string]) =
+      msgReceived = args[0]
+
+    hub.subscribe("sess1", cb)
+    hub.sendAll("Hello PubSub")
+    check msgReceived == "Hello PubSub"
+
+    hub.free()
+
+  test "Value Types & Layout Primitives":
+    let c = rgb(255, 0, 0)
+    check c.r == 255
+    check c.a == 255
+
+    let p = paddingAll(16.0)
+    check p.top == 16.0
+    check p.left == 16.0
+
+  test "Reactive Component Lifecycle & State Mutations":
+    let comp = CounterComponent(count: 0)
+    comp.mount()
+    check comp.isMounted
+    check comp.children.len == 1
+
+    comp.setState(proc() =
+      comp.count = 5
+    )
+    check comp.count == 5
+    check isDirty(comp)
+
+  test "Router Route Matching":
+    let r = newRouter()
+    r.addRoute("/", proc(params: Table[string, string]): Control =
+      let btn = newButton()
+      btn.text("Home")
+      return btn
+    )
+
+    let pageCtrl = r.matchRoute("/")
+    check pageCtrl.controlType == "Button"

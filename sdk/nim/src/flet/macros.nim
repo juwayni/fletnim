@@ -51,6 +51,16 @@ macro declareControl*(typeName: untyped, baseType: untyped, body: untyped): unty
             buf.appendByte(byte((v shr 16) and 0xFF))
             buf.appendByte(byte((v shr 24) and 0xFF))
         )
+      elif fieldTypeRepr == "bool":
+        customSerializers.add(
+          quote do:
+            buf.appendByte(if c.`fieldIdent`: byte(1) else: byte(0))
+        )
+      elif fieldTypeRepr == "float64" or fieldTypeRepr == "float":
+        customSerializers.add(
+          quote do:
+            buf.writeF64(c.`fieldIdent`)
+        )
 
   let typeDef = newNimNode(nnkTypeDef).add(
     postfix(typeNode, "*"),
