@@ -1,6 +1,6 @@
 ## Base Control Type and Mutation Tracking Engine
 
-import std/atomics
+import std/[tables, atomics]
 import flet/types
 
 var gLastId: Atomic[uint64]
@@ -20,6 +20,7 @@ type
     expand*: int
     opacity*: float64
     tooltip*: string
+    events*: Table[string, EventHandler]
     children*: seq[Control]
 
 method serializeCustomProps*(c: Control, buf: var MemoryBuffer) {.base.} =
@@ -33,11 +34,15 @@ proc initControl*(c: Control, controlType: string) =
   c.disabled = false
   c.expand = 0
   c.opacity = 1.0
-  c.dirtyFlags = 0xFFFF_FFFF_FFFF_FFFFu64 # Initially all flags set so full state is emitted
+  c.dirtyFlags = 0xFFFF_FFFF_FFFF_FFFFu64
+  c.events = initTable[string, EventHandler]()
 
 proc newControl*(controlType: string): Control =
   result = Control()
   initControl(result, controlType)
+
+proc on*(c: Control, eventName: string, handler: EventHandler) =
+  c.events[eventName] = handler
 
 proc markDirty*(c: Control, flagIndex: int) {.inline.} =
   c.dirtyFlags = c.dirtyFlags or (1u64 shl flagIndex)

@@ -1,5 +1,5 @@
 import std/[unittest, tables]
-import flet/[types, control, ffi, session, pubsub, value_types, component, router, controls, canvas, auth, app, utils, testing]
+import flet/[types, control, ffi, session, pubsub, value_types, component, router, controls, canvas, auth, app, utils, testing, theme, transform, animation]
 
 type CounterComponent = ref object of Component
   count: int
@@ -53,6 +53,24 @@ suite "Nim Flet Full SDK Test Suite":
     check txt.value == "Hello World"
     check cv.width == 300.0
     check line.x2 == 100.0
+
+  test "Theme & Styling":
+    let th = newTheme()
+    check th.useMaterial3
+    check th.colorScheme.primary == "#6200EE"
+
+  test "Transformations & Geometry":
+    let s = scale(1.5, 2.0)
+    let r = rotate(45.0)
+    let o = offset(10.0, 20.0)
+    check s.x == 1.5
+    check r.angle == 45.0
+    check o.y == 20.0
+
+  test "Animations Engine":
+    let anim = animation(300, AnimationCurve.EaseInOut)
+    check anim.durationMs == 300
+    check anim.curve == AnimationCurve.EaseInOut
 
   test "Utilities Slugify, Hashing, Vector Math":
     check slugify("Hello World 123!") == "hello-world-123"

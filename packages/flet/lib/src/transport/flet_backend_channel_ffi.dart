@@ -57,8 +57,8 @@ class FletFFIBackendChannel implements FletBackendChannel {
 
   @override
   Future connect() async {
-    // Register native callback for Nim patch updates
-    _patchNativeCallable = ffi.NativeCallable<PatchCallbackNative>.listener((bufPtr, len) {
+    // Register synchronous isolateLocal native callback for zero-copy memory safety
+    _patchNativeCallable = ffi.NativeCallable<PatchCallbackNative>.isolateLocal((bufPtr, len) {
       if (bufPtr != ffi.nullptr && len > 0) {
         final bytes = bufPtr.asTypedList(len);
         final packet = Uint8List.fromList(bytes);
@@ -85,7 +85,6 @@ class FletFFIBackendChannel implements FletBackendChannel {
         final evName = evNamePtr.value != ffi.nullptr ? evNamePtr.value.toDartString() : "";
         final payload = payloadPtr.value != ffi.nullptr ? payloadPtr.value.toDartString() : "";
 
-        // Forward polled event payload directly to Flet backend packet pipeline
         final eventBytes = Uint8List.fromList("$targetId:$evName:$payload".codeUnits);
         onPacket(eventBytes);
       }
