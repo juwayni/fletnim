@@ -3,7 +3,10 @@
 import locks
 import flet/types
 
+type EventDispatcherProc* = proc (targetId: uint64, eventName, payload: string) {.closure.}
+
 var gPatchCallback: PatchCallback = nil
+var gEventDispatcher: EventDispatcherProc = nil
 
 type
   EventNode = object
@@ -18,6 +21,9 @@ type
 var gEventQueue: EventQueue
 initLock(gEventQueue.lock)
 
+proc flet_register_event_dispatcher*(dispatcher: EventDispatcherProc) =
+  gEventDispatcher = dispatcher
+
 proc flet_register_patch_callback*(cb: PatchCallback) {.exportc, cdecl, dynlib.} =
   ## Registers the callback that Dart provides for receiving patch payloads.
   gPatchCallback = cb
@@ -29,13 +35,10 @@ proc flet_dispatch_event*(targetId: uint64, eventName: cstring, payloadPtr: ptr 
     payload.setLen(payloadLen)
     copyMem(addr payload[0], payloadPtr, payloadLen)
 
-  let node = EventNode(
-    targetId: targetId,
-    eventName: if eventName != nil: $eventName else: "",
-    payload: payload
-  )
-  withLock(gEventQueue.lock):
-    gEventQueue.items.add(node)
+  let evName = if eventName != nil: $eventName else: ""
+
+  if gEventDispatcher != nil:
+    gEventDispatcher(targetId, evName, payload)
 
 proc emitPatchToDart*(buf: var MemoryBuffer) =
   ## Sends a memory buffer containing UI patches to Dart over the registered callback.
