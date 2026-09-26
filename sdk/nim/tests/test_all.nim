@@ -1,5 +1,5 @@
 import std/[unittest, tables]
-import flet/[types, control, ffi, session, pubsub, value_types, component, router, controls, cupertino, material, services, canvas, auth, app, utils, testing, theme, transform, animation, security, version, page, geometry, colors]
+import flet/[types, control, ffi, session, pubsub, value_types, component, router, controls, cupertino, material, services, core, canvas, auth, app, utils, testing, theme, transform, animation, security, version, page, geometry, colors]
 
 type CounterComponent = ref object of Component
   count: int
@@ -14,6 +14,16 @@ suite "Nim Flet Full SDK Test Suite":
   test "Version Constants":
     check FletVersion == "0.26.0"
     check IsNativeNim == true
+
+  test "Core UI Controls Suite":
+    let markdown = newMarkdown()
+    markdown.value = "# Hello Nim Flet"
+
+    let gest = newGestureDetector()
+    gest.mouseCursor = "pointer"
+
+    check markdown.value == "# Hello Nim Flet"
+    check gest.mouseCursor == "pointer"
 
   test "Services Suite":
     let fp = newFilePicker()
