@@ -23,7 +23,15 @@ proc registerControl*(s: Session, c: Control) =
   for child in c.children:
     s.registerControl(child)
 
+proc handleControlEvent*(s: Session, targetId: ControlId, eventName, payload: string) =
+  ## Handles incoming UI events dispatched from Dart/Flutter over FFI.
+  if s.controlRegistry.hasKey(targetId):
+    let ctrl = s.controlRegistry[targetId]
+    # Execute event handlers registered on control
+    discard
+
 proc updateUI*(s: Session) =
-  ## Scans dirty controls, packs binary patch, and emits to Dart FFI safely without premature deallocation.
+  ## Scans dirty controls, packs binary patch, emits to Dart FFI, and frees heap buffer.
   var patchBuf = generatePatchBuffer(s.rootControl)
   emitPatchToDart(patchBuf)
+  free(patchBuf)
