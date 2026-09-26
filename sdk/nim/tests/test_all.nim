@@ -1,5 +1,5 @@
 import std/[unittest, tables]
-import flet/[types, control, ffi, session, pubsub, value_types, component, router, controls, canvas, auth, app, utils, testing, theme, transform, animation, security, version]
+import flet/[types, control, ffi, session, pubsub, value_types, component, router, controls, canvas, auth, app, utils, testing, theme, transform, animation, security, version, page, geometry, colors]
 
 type CounterComponent = ref object of Component
   count: int
@@ -20,6 +20,21 @@ suite "Nim Flet Full SDK Test Suite":
     let enc = encryptSecret("hello", secret)
     let dec = decryptSecret(enc, secret)
     check dec == "hello"
+
+  test "Page Control Initialization":
+    let p = newPage()
+    p.title = "Nim Flet Desktop App"
+    p.route = "/"
+    check p.title == "Nim Flet Desktop App"
+
+  test "Geometry & Border Side":
+    let b = borderAll(2.0, RED)
+    check b.top.width == 2.0
+    check b.top.color == "#FF0000"
+
+  test "Colors & Opacity Helper":
+    let semiRed = withOpacity(RED, 0.5)
+    check semiRed.len == 9
 
   test "MemoryBuffer allocation and operations":
     var buf = newMemoryBuffer(16)
@@ -61,7 +76,7 @@ suite "Nim Flet Full SDK Test Suite":
     line.y2 = 100.0
 
     let path = newShapePath()
-    path.color = "#FF0000"
+    path.color = RED
 
     check txt.value == "Hello World"
     check cv.width == 300.0
