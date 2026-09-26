@@ -1,5 +1,5 @@
 import std/[unittest, tables]
-import flet/[types, control, ffi, session, pubsub, value_types, component, router, controls, cupertino, canvas, auth, app, utils, testing, theme, transform, animation, security, version, page, geometry, colors]
+import flet/[types, control, ffi, session, pubsub, value_types, component, router, controls, cupertino, material, canvas, auth, app, utils, testing, theme, transform, animation, security, version, page, geometry, colors]
 
 type CounterComponent = ref object of Component
   count: int
@@ -14,6 +14,22 @@ suite "Nim Flet Full SDK Test Suite":
   test "Version Constants":
     check FletVersion == "0.26.0"
     check IsNativeNim == true
+
+  test "Material Controls Suite":
+    let dialog = newMaterialAlertDialog()
+    dialog.title = "Warning"
+    dialog.open = true
+
+    let card = newMaterialCard()
+    card.elevation = 4.0
+    card.color = "#FFFFFF"
+
+    let tf = newMaterialTextField()
+    tf.label = "Username"
+
+    check dialog.title == "Warning"
+    check card.elevation == 4.0
+    check tf.label == "Username"
 
   test "Cupertino Controls Suite":
     let sheet = newCupertinoActionSheet()
