@@ -28,6 +28,13 @@ declareControl(ShapeRect, Control):
   borderRadius: float64
   color: string
 
+declareControl(ShapeOval, Control):
+  x: float64
+  y: float64
+  width: float64
+  height: float64
+  color: string
+
 declareControl(ShapeArc, Control):
   x: float64
   y: float64
@@ -35,3 +42,24 @@ declareControl(ShapeArc, Control):
   height: float64
   startAngle: float64
   sweepAngle: float64
+
+declareControl(ShapePath, Control):
+  elements: string
+  color: string
+
+declareControl(ShapePoints, Control):
+  points: string
+  color: string
+
+declareControl(ShapeText, Control):
+  x: float64
+  y: float64
+  text: string
+  color: string
+
+declareControl(ShapeImage, Control):
+  x: float64
+  y: float64
+  src: string
+  width: float64
+  height: float64

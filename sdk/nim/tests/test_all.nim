@@ -1,5 +1,5 @@
 import std/[unittest, tables]
-import flet/[types, control, ffi, session, pubsub, value_types, component, router, controls, canvas, auth, app, utils, testing, theme, transform, animation]
+import flet/[types, control, ffi, session, pubsub, value_types, component, router, controls, canvas, auth, app, utils, testing, theme, transform, animation, security, version]
 
 type CounterComponent = ref object of Component
   count: int
@@ -10,6 +10,16 @@ method build(comp: CounterComponent): Control =
   return btn
 
 suite "Nim Flet Full SDK Test Suite":
+
+  test "Version Constants":
+    check FletVersion == "0.26.0"
+    check IsNativeNim == true
+
+  test "Security Secret Encryption":
+    let secret = "my_secret_key"
+    let enc = encryptSecret("hello", secret)
+    let dec = decryptSecret(enc, secret)
+    check dec == "hello"
 
   test "MemoryBuffer allocation and operations":
     var buf = newMemoryBuffer(16)
@@ -50,9 +60,13 @@ suite "Nim Flet Full SDK Test Suite":
     line.x2 = 100.0
     line.y2 = 100.0
 
+    let path = newShapePath()
+    path.color = "#FF0000"
+
     check txt.value == "Hello World"
     check cv.width == 300.0
     check line.x2 == 100.0
+    check path.color == "#FF0000"
 
   test "Theme & Styling":
     let th = newTheme()
